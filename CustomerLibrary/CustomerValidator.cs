@@ -1,68 +1,23 @@
-﻿using Customer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using FluentValidation;
 
 namespace Customer
 {
-    public class CustomerValidator
+    public class CustomerValidator : AbstractValidator<Customer>
     {
         private const int FirstNameMaxLength = 50;
         private const int LastNameMaxLength = 50;
-        private const int AddressesMinCount = 1;
-        private const int NotesMinCount = 1;
         private const int PhoneNumberMaxLength = 15;
-        private static readonly Regex EmailRegex = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
 
-        public static List<string> Validate(Customer customer)
+        public CustomerValidator()
         {
-            var errors = new List<string>();
-
-            if (customer.FirstName?.Length > FirstNameMaxLength)
-            {
-                errors.Add("FirstName must be less then 50 chars");
-            }
-            if (customer.LastName.ValidateNullAndMaxLength(LastNameMaxLength))
-            {
-                errors.Add("LastName must be less then 50 chars");
-            }
-            if (customer.Addresses.Count < AddressesMinCount)
-            {
-                errors.Add("Addresses length must be at least 1");
-            }
-            if (customer.PhoneNumber != null)
-            {
-                bool isValid = !(customer.PhoneNumber.Length > PhoneNumberMaxLength);
-
-                foreach (var ch in customer.PhoneNumber)
-                {
-                    if (ch < '0' || ch > '9')
-                    {
-                        isValid = false;
-                    }
-                }
-
-                if (!isValid)
-                    errors.Add("Invalid customer property: PhoneNumber");
-            }
-            if (customer.Email != null && !EmailRegex.IsMatch(customer.Email))
-            {
-                errors.Add("Invalid customer property: Email");
-            }
-            if (customer.Notes.Count < NotesMinCount)
-            {
-                errors.Add("Notes length must be at least 1");
-            }
-            if (customer.TotalPurchasesAmount != null && customer.TotalPurchasesAmount < 0)
-            {
-                errors.Add("Invalid customer property: TotalPurchasesAmount");
-            }
-
-
-            return errors;
+            RuleFor(customer => customer.FirstName).MaximumLength(FirstNameMaxLength).WithMessage("FirstName must be less then 50 chars");
+            RuleFor(customer => customer.LastName).NotNull().MaximumLength(LastNameMaxLength).WithMessage("LastName must be less then 50 chars");
+            RuleFor(customer => customer.Addresses).NotEmpty().WithMessage("Addresses length must be at least 1");
+            RuleFor(customer => customer.PhoneNumber).Matches(@"^\d{12,15}$").MaximumLength(PhoneNumberMaxLength).WithMessage("Invalid customer property: PhoneNumber");
+            RuleFor(customer => customer.Notes).NotEmpty().WithMessage("Notes length must be at least 1");
+            RuleFor(customer => customer.Email).EmailAddress().WithMessage("Invalid customer property: Email");
+            RuleFor(customer => customer.TotalPurchasesAmount).GreaterThanOrEqualTo(0).WithMessage("Invalid customer property: TotalPurchasesAmount");
         }
+
     }
 }

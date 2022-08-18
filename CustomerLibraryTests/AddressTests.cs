@@ -1,11 +1,14 @@
 ﻿using Bogus;
 using Customer;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using FluentValidation.TestHelper;
 
 namespace CustomerTests
 {
     public class AddressTests
     {
+        private readonly AddressValidator _validator = new AddressValidator();
+        private readonly Faker _faker = new Faker();
+
         [Fact]
         public void ShouldBeAbleToCreateAddress()
         {
@@ -16,25 +19,25 @@ namespace CustomerTests
         public void ShouldBeAbleToValidate()
         {
             Address address = new Address();
-            var result = AddressValidator.Validate(address);
+            var validationResult = _validator.TestValidate(address);
         }
 
         [Fact]
         public void AddressLineLengthMustBeLess100()
         {
             Address address = new Address();
-            address.AddressLine = (new Faker()).Random.String(102);
-            var validationResult = AddressValidator.Validate(address);
-            CollectionAssert.Contains(validationResult, "AddressLine must be less then 100 chars");
+            address.AddressLine = _faker.Random.String(102);
+            var validationResult = _validator.TestValidate(address);
+            validationResult.ShouldHaveValidationErrorFor(a => a.AddressLine);
         }
 
         [Fact]
         public void AddressLine2LengthMustBeLess100()
         {
             Address address = new Address();
-            address.AddressLine2 = (new Faker()).Random.String(102);
-            var validationResult = AddressValidator.Validate(address);
-            CollectionAssert.Contains(validationResult, "AddressLine2 must be less then 100 chars");
+            address.AddressLine2 = _faker.Random.String(102);
+            var validationResult = _validator.TestValidate(address);
+            validationResult.ShouldHaveValidationErrorFor(a => a.AddressLine2);
         }
 
         [Fact]
@@ -42,17 +45,17 @@ namespace CustomerTests
         {
             Address address = new Address();
             address.AddressType = AddressTypes.Unknown;
-            var validationResult = AddressValidator.Validate(address);
-            CollectionAssert.Contains(validationResult, "Invalid address property: AddressType");
+            var validationResult = _validator.TestValidate(address);
+            validationResult.ShouldHaveValidationErrorFor(a => a.AddressType);
         }
 
         [Fact]
         public void CityLengthMustBeLess50()
         {
             Address address = new Address();
-            address.City = (new Faker()).Random.String(102);
-            var validationResult = AddressValidator.Validate(address);
-            CollectionAssert.Contains(validationResult, "City must be less then 50 chars");
+            address.City = _faker.Random.String(102);
+            var validationResult = _validator.TestValidate(address);
+            validationResult.ShouldHaveValidationErrorFor(a => a.City);
         }
 
         [Fact]
@@ -60,26 +63,26 @@ namespace CustomerTests
         {
             Address address = new Address();
             address.Country = "Israel";
-            var validationResult = AddressValidator.Validate(address);
-            CollectionAssert.Contains(validationResult, "Invalid address property: Country");
+            var validationResult = _validator.TestValidate(address);
+            validationResult.ShouldHaveValidationErrorFor(a => a.Country);
         }
 
         [Fact]
         public void PostalCodeLengthMustBeLess5()
         {
             Address address = new Address();
-            address.PostalCode = (new Faker()).Random.String(102);
-            var validationResult = AddressValidator.Validate(address);
-            CollectionAssert.Contains(validationResult, "PostalCode must be less then 5 chars");
+            address.PostalCode = _faker.Random.String(102);
+            var validationResult = _validator.TestValidate(address);
+            validationResult.ShouldHaveValidationErrorFor(a => a.PostalCode);
         }
 
         [Fact]
         public void StateLengthMustBeLess20()
         {
             Address address = new Address();
-            address.State = (new Faker()).Random.String(102);
-            var validationResult = AddressValidator.Validate(address);
-            CollectionAssert.Contains(validationResult, "State must be less then 20 chars");
+            address.State = _faker.Random.String(102);
+            var validationResult = _validator.TestValidate(address);
+            validationResult.ShouldHaveValidationErrorFor(a => a.State);
         }
 
     }

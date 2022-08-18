@@ -1,13 +1,11 @@
-﻿using Customer;
+﻿using FluentValidation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Customer
 {
-    public class AddressValidator
+    public class AddressValidator: AbstractValidator<Address>
     {
         private const int AddressMaxLength = 100;
         private const int CityMaxLength = 50;
@@ -15,40 +13,16 @@ namespace Customer
         private const int PostalCodeMaxLength = 6;
         private const int StateMaxLength = 20;
 
-        public static List<string> Validate(Address address)
+        public AddressValidator()
         {
-            var errors = new List<string>();
-
-            if (address.AddressLine.ValidateNullAndMaxLength(AddressMaxLength))
-            {
-                errors.Add("AddressLine must be less then 100 chars");
-            }
-            if (address.AddressLine2.Length > AddressMaxLength)
-            {
-                errors.Add("AddressLine2 must be less then 100 chars");
-            }
-            if (address.AddressType == AddressTypes.Unknown)
-            {
-                errors.Add("Invalid address property: AddressType");
-            }
-            if (address.City.ValidateNullAndMaxLength(CityMaxLength))
-            {
-                errors.Add("City must be less then 50 chars");
-            }
-            if (!AllowedCountries.Contains(address.Country, StringComparer.OrdinalIgnoreCase))
-            {
-                errors.Add("Invalid address property: Country");
-            }
-            if (address.PostalCode.ValidateNullAndMaxLength(PostalCodeMaxLength))
-            {
-                errors.Add("PostalCode must be less then 5 chars");
-            }
-            if (address.State.ValidateNullAndMaxLength(StateMaxLength))
-            {
-                errors.Add("State must be less then 20 chars");
-            }
-
-            return errors;
+            RuleFor(address => address.AddressLine).NotNull().MaximumLength(AddressMaxLength).WithMessage("AddressLine must be less then 100 chars");
+            RuleFor(address => address.AddressLine2).MaximumLength(AddressMaxLength).WithMessage("AddressLine2 must be less then 100 chars");
+            RuleFor(address => address.AddressType).NotEqual(AddressTypes.Unknown).WithMessage("Invalid address property: AddressType");
+            RuleFor(address => address.City).MaximumLength(CityMaxLength).WithMessage("City must be less then 50 chars");
+            RuleFor(address => address.Country).Must(country => AllowedCountries.Contains(country, StringComparer.OrdinalIgnoreCase)).WithMessage("Invalid address property: Country");
+            RuleFor(address => address.PostalCode).MaximumLength(PostalCodeMaxLength).WithMessage("PostalCode must be less then 5 chars");
+            RuleFor(address => address.State).MaximumLength(StateMaxLength).WithMessage("State must be less then 20 chars");
         }
+
     }
 }

@@ -1,11 +1,14 @@
 ﻿using Bogus;
 using Customer;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using FluentValidation.TestHelper;
 
 namespace CustomerTests
 {
     public class CustomerTests
     {
+        private readonly CustomerValidator _validator = new CustomerValidator();
+        private readonly Faker _faker = new Faker();
+
         [Fact]
         public void ShouldBeAbleToCreateCustomer()
         {
@@ -16,42 +19,41 @@ namespace CustomerTests
         public void ShouldBeAbleToValidate()
         {
             Customer.Customer customer = new Customer.Customer();
-            var validationResult = CustomerValidator.Validate(customer);
-
+            var validationResult = _validator.TestValidate(customer);
         }
 
         [Fact]
         public void FirstNameLengthMustBeLess50()
         {
             Customer.Customer customer = new Customer.Customer();
-            customer.FirstName = (new Faker()).Random.String(102);
-            var validationResult = CustomerValidator.Validate(customer);
-            CollectionAssert.Contains(validationResult, "FirstName must be less then 50 chars");
+            customer.FirstName = _faker.Random.String(51);
+            var validationResult = _validator.TestValidate(customer);
+            validationResult.ShouldHaveValidationErrorFor(c => c.FirstName);
         }
 
         [Fact]
         public void LastNameLengthMustBeLess50()
         {
             Customer.Customer customer = new Customer.Customer();
-            customer.LastName = (new Faker()).Random.String(102);
-            var validationResult = CustomerValidator.Validate(customer);
-            CollectionAssert.Contains(validationResult, "LastName must be less then 50 chars");
+            customer.LastName = _faker.Random.String(51);
+            var validationResult = _validator.TestValidate(customer);
+            validationResult.ShouldHaveValidationErrorFor(c => c.LastName);
         }
 
         [Fact]
         public void AddressesCanNotBeEmpty()
         {
             Customer.Customer customer = new Customer.Customer();
-            var validationResult = CustomerValidator.Validate(customer);
-            CollectionAssert.Contains(validationResult, "Addresses length must be at least 1");
+            var validationResult = _validator.TestValidate(customer);
+            validationResult.ShouldHaveValidationErrorFor(c => c.Addresses);
         }
 
         [Fact]
         public void NotesCanNotBeEmpty()
         {
             Customer.Customer customer = new Customer.Customer();
-            var validationResult = CustomerValidator.Validate(customer);
-            CollectionAssert.Contains(validationResult, "Notes length must be at least 1");
+            var validationResult = _validator.TestValidate(customer);
+            validationResult.ShouldHaveValidationErrorFor(c => c.Notes);
         }
 
         [Fact]
@@ -59,17 +61,17 @@ namespace CustomerTests
         {
             Customer.Customer customer = new Customer.Customer();
             customer.Email = "dsfa";
-            var validationResult = CustomerValidator.Validate(customer);
-            CollectionAssert.Contains(validationResult, "Invalid customer property: Email");
+            var validationResult = _validator.TestValidate(customer);
+            validationResult.ShouldHaveValidationErrorFor(c => c.Email);
         }
 
         [Fact]
         public void PhoneNumberLengthMustBeLess15()
         {
             Customer.Customer customer = new Customer.Customer();
-            customer.PhoneNumber = (new Faker()).Random.String(102);
-            var validationResult = CustomerValidator.Validate(customer);
-            CollectionAssert.Contains(validationResult, "Invalid customer property: PhoneNumber");
+            customer.PhoneNumber = _faker.Random.String(102);
+            var validationResult = _validator.TestValidate(customer);
+            validationResult.ShouldHaveValidationErrorFor(c => c.PhoneNumber);
         }
 
         [Fact]
@@ -77,9 +79,9 @@ namespace CustomerTests
         {
             Customer.Customer customer = new Customer.Customer();
             customer.TotalPurchasesAmount = -1;
-            var validationResult = CustomerValidator.Validate(customer);
-            CollectionAssert.Contains(validationResult, "Invalid customer property: TotalPurchasesAmount");
+            var validationResult = _validator.TestValidate(customer);
+            validationResult.ShouldHaveValidationErrorFor(c => c.TotalPurchasesAmount);
         }
-        
+
     }
 }
